@@ -13,6 +13,11 @@ String Functions and Operators
 
     String concatenation.
 
+    .. code-block:: edgeql-repl
+
+        db> SELECT 'some' + ' text';
+        {'some text'}
+
 
 .. eql:operator:: LIKE: A LIKE B
 
@@ -22,7 +27,16 @@ String Functions and Operators
 
     Case-sensitive simple string matching.
 
-    :eql:op:`LIKE` works exactly the same way as in SQL.
+    .. code-block:: edgeql-repl
+
+        db> SELECT 'abc' LIKE 'abc';
+        {True}
+        db> SELECT 'abc' LIKE 'a%';
+        {True}
+        db> SELECT 'abc' LIKE '_b_';
+        {True}
+        db> SELECT 'abc' LIKE 'c';
+        {False}
 
 
 .. eql:operator:: ILIKE: A ILIKE B
@@ -33,7 +47,10 @@ String Functions and Operators
 
     Case-insensitive simple string matching.
 
-    :eql:op:`ILIKE` works exactly the same way as in SQL.
+    .. code-block:: edgeql-repl
+
+        db> SELECT 'Abc' ILIKE 'a%';
+        {True}
 
 
 .. eql:function:: std::lower(str) -> str
@@ -46,10 +63,10 @@ String Functions and Operators
 
     Return a lowercase copy of the input string.
 
-    .. code-block:: edgeql
+    .. code-block:: edgeql-repl
 
-        SELECT lower('Some Fancy Title');
-        # returns 'some fancy title'
+        db> SELECT lower('Some Fancy Title');
+        {'some fancy title'}
 
 .. eql:function:: std::re_match(str, str) -> array<str>
 
@@ -70,6 +87,11 @@ String Functions and Operators
     the match, each match represented by an :eql:type:`array\<str\>`
     of matched groups.
 
+    .. code-block:: edgeql-repl
+
+        db> SELECT std::re_match('I ❤️ edgeql', '\w{4}ql');
+        {['edgeql']}
+
 .. eql:function:: std::re_match_all(str, str) -> SET OF array<str>
 
     :param $0: input string
@@ -89,6 +111,11 @@ String Functions and Operators
     all matches, each match represented by an :eql:type:`array\<str\>`
     of matched groups.
 
+    .. code-block:: edgeql-repl
+
+        db> SELECT std::re_match_all('an abstract concept', 'a\w+');
+        {['an'], ['abstract']}
+
 .. eql:function:: std::re_test(str, str) -> bool
 
     :param $0: input string
@@ -96,7 +123,7 @@ String Functions and Operators
     :param $1: regular expression
     :paramtype $1: str
 
-    :return: ``TRUE`` if there is a match, ``FALSE`` otherwise
+    :return: ``True`` if there is a match, ``False`` otherwise
     :returntype: bool
 
     :index: regex regexp regular match
@@ -105,4 +132,9 @@ String Functions and Operators
 
     Given an input string and a regular expression string test whether
     there is a match for the regular expression within the string.
-    Return ``TRUE`` if there is a match, ``FALSE`` otherwise.
+    Return ``True`` if there is a match, ``False`` otherwise.
+
+    .. code-block:: edgeql-repl
+
+        db> SELECT std::re_test('abc', 'a');
+        {True}
