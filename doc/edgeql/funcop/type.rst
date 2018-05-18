@@ -16,7 +16,7 @@ IS
     :optype B: type
     :resulttype: bool
 
-    Type-checking of ``A`` w.r.t. type ``B``.
+    Check if ``A`` is an instance of ``B`` or any of ``B``'s subtypes.
 
     Type-checking operators :eql:op:`IS` and :eql:op:`IS NOT<IS>` that
     test whether the left operand is of any of the types given by the
@@ -26,17 +26,17 @@ IS
     it does not in any way participate in the interactions of sets and
     longest common prefix rules.
 
-    .. code-block:: edgeql
+    .. code-block:: edgeql-repl
 
-        SELECT 1 IS int64;
-        # returns [True]
+        db> SELECT 1 IS int64;
+        {True}
 
-        SELECT User IS NOT SystemUser
-        FILTER User.name = 'Alice';
-        # returns [True]
+        db> SELECT User IS NOT SystemUser
+        ... FILTER User.name = 'Alice';
+        {True}
 
-        SELECT User IS (Text, Named);
-        # returns [True, ..., True], one for every user
+        db> SELECT User IS (Text, Named);
+        {True, ..., True}  # one for every user instance
 
 
 .. _ref_eql_expr_typecast:
@@ -65,33 +65,38 @@ conversion operation has been defined.
 
 Examples:
 
-.. code-block:: edgeql
+.. code-block:: edgeql-repl
 
     # cast a string literal into an integer
-    SELECT <int64>"42";
+    db> SELECT <int64>"42";
+    {42}
 
     # cast an array of integers into an array of str
-    SELECT <array<str>>[1, 2 , 3];
+    db> SELECT <array<str>>[1, 2, 3];
+    {['1', '2', '3']}
 
     # cast an issue number into a string
-    SELECT <str>example::Issue.number;
+    db> SELECT <str>example::Issue.number;
+    {'142'}
 
 Casts also work for converting tuples or declaring different tuple
 element names for convenience.
 
-.. code-block:: edgeql
+.. code-block:: edgeql-repl
 
-    SELECT <tuple<int64, str>>(1, 3);
-    # returns [[1, '3']]
+    db> SELECT <tuple<int64, str>>(1, 3);
+    {[1, '3']}
 
-    WITH
-        # a test tuple set, that could be a result of
-        # some other computation
-        stuff := (1, 'foo', 42)
-    SELECT (
-        # cast the tuple into something more convenient
-        <tuple<a: int64, name: str, b: int64>>stuff
-    ).name;  # access the 'name' element
+    db> WITH
+    ...     # a test tuple set, that could be a result of
+    ...     # some other computation
+    ...     stuff := (1, 'foo', 42)
+    ... SELECT (
+    ...     # cast the tuple into something more convenient
+    ...     <tuple<a: int64, name: str, b: int64>>stuff
+    ... ).name;  # access the 'name' element
+    {'foo'}
+
 
 An important use of *casting* is in defining the type of an empty
 set ``{}``, which can be required for purposes of type disambiguation.

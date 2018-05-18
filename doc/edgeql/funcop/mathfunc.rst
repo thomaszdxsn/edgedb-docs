@@ -14,3 +14,8 @@ provided by EdgeDB.
     :returntype: float64
 
     Return a pseudo-random number in the range ``0.0 <= x < 1.0``.
+
+    .. code-block:: edgeql-repl
+
+        db> SELECT std::random();
+        {0.62649393780157}

@@ -9,9 +9,6 @@ Set Operators
 This section describes EdgeQL operators that work on whole sets.
 
 
-DISTINCT
-========
-
 .. eql:operator:: DISTINCT: DISTINCT A
 
     :optype A: SET OF any
@@ -22,9 +19,11 @@ DISTINCT
     ``DISTINCT`` is a set operator that returns a new set where
     no member is equal to any other member.
 
+    .. code-block:: edgeql-repl
 
-IN
-==
+        db> SELECT DISTINCT {1, 2, 2, 3};
+        {1, 2, 3}
+
 
 .. eql:operator:: IN: A IN B or A NOT IN B
 
@@ -39,19 +38,17 @@ IN
     Set membership operators :eql:op:`IN` and :eql:op:`NOT IN<IN>`
     that test for each element of ``A`` whether it is present in ``B``.
 
-    .. code-block:: edgeql
+    .. code-block:: edgeql-repl
 
-        SELECT 1 IN {1, 3, 5};
-        # returns [True]
+        db> SELECT 1 IN {1, 3, 5};
+        {True}
 
-        SELECT 'Alice' IN User.name;
+        db> SELECT 'Alice' IN User.name;
+        {True}
 
-        SELECT {1, 2} IN {1, 3, 5};
-        # returns [True, False]
+        db> SELECT {1, 2} IN {1, 3, 5};
+        {True, False}
 
-
-UNION
-=====
 
 .. eql:operator:: UNION: A UNION B
 

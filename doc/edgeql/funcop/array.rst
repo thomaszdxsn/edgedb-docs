@@ -25,21 +25,21 @@ Example:
 
 .. code-block:: edgeql-repl
 
-    db> SELECT [1, 2, 3][0]
+    db> SELECT [1, 2, 3][0];
     {1}
 
 Negative indexing is supported:
 
 .. code-block:: edgeql-repl
 
-    db> SELECT [1, 2, 3][-1]
+    db> SELECT [1, 2, 3][-1];
     {3}
 
 Referencing a non-existent array element will result in an empty set:
 
 .. code-block:: edgeql-repl
 
-    db> SELECT [1, 2, 3][0]
+    db> SELECT [1, 2, 3][4];
     {}
 
 
@@ -67,31 +67,23 @@ Examples:
 
 .. code-block:: edgeql-repl
 
-    db> SELECT [1, 2, 3][0:2]
-    {
-      [1, 2]
-    }
+    db> SELECT [1, 2, 3][0:2];
+    {[1, 2]}
 
-    db> SELECT [1, 2, 3][2:]
-    {
-      [3]
-    }
+    db> SELECT [1, 2, 3][2:];
+    {[3]}
 
-    db> SELECT [1, 2, 3][:1]
-    {
-      [1]
-    }
+    db> SELECT [1, 2, 3][:1];
+    {[1]}
 
-    db> SELECT [1, 2, 3][:-2]
-    {
-      [1]
-    }
+    db> SELECT [1, 2, 3][:-2];
+    {[1]}
 
 Referencing a non-existent array slice will result in an empty array:
 
 .. code-block:: edgeql-repl
 
-    db> SELECT [1, 2, 3][10:20]
+    db> SELECT [1, 2, 3][10:20];
     {[]}
 
 
@@ -112,14 +104,13 @@ Functions
 
     The ordering of the input set will be preserved if specified.
 
-    .. code-block:: edgeql
+    .. code-block:: edgeql-repl
 
-        SELECT array_agg({2, 3, 5});
-        # returns [2, 3, 5]
+        db> SELECT array_agg({2, 3, 5});
+        {[2, 3, 5]}
 
-        SELECT array_agg(User.name ORDER BY User.name);
-        # returns a string array containing all User names sorted
-        # alphabetically
+        db> SELECT array_agg(User.name ORDER BY User.name);
+        {['Alice', 'Bob', 'Joe', 'Sam']}
 
 .. eql:function:: std::array_contains(array<any>, any) -> bool
 
@@ -133,13 +124,13 @@ Functions
 
     Return ``TRUE`` if the array contains the specified element.
 
-    .. code-block:: edgeql
+    .. code-block:: edgeql-repl
 
-        SELECT array_contains([2, 3, 5], 2);
-        # returns TRUE
+        db> SELECT array_contains([2, 3, 5], 2);
+        {True}
 
-        SELECT array_contains(['foo', 'bar'], 'baz');
-        # returns FALSE
+        db> SELECT array_contains(['foo', 'bar'], 'baz');
+        {False}
 
 .. eql:function:: std::array_enumerate(array<any>) -> \
                   SET OF tuple<any, int64>
@@ -158,15 +149,14 @@ Functions
     and the second element is the index of that value for all values
     in the array.
 
-    .. code-block:: edgeql
-
-        SELECT array_enumerate([2, 3, 5]);
-        # returns {(3, 1), (2, 0), (5, 2)}
-
     .. note::
 
-        Notice that the ordering of the returned set is not
-        guaranteed.
+        The ordering of the returned set is not guaranteed.
+
+    .. code-block:: edgeql-repl
+
+        db> SELECT array_enumerate([2, 3, 5]);
+        {(3, 1), (2, 0), (5, 2)}
 
 .. eql:function:: std::array_unpack(array<any>) -> SET OF any
 
@@ -180,9 +170,11 @@ Functions
 
     Return array elements as a set.
 
-    The ordering of the returned set is not guaranteed.
+    .. note::
 
-    .. code-block:: edgeql
+        The ordering of the returned set is not guaranteed.
 
-        SELECT array_unpack([2, 3, 5]);
-        # returns {3, 2, 5}
+    .. code-block:: edgeql-repl
+
+        db> SELECT array_unpack([2, 3, 5]);
+        {3, 2, 5}

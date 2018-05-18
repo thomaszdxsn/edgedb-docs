@@ -18,13 +18,13 @@ Aggregate Functions
 
     Return the number of elements in a set.
 
-    .. code-block:: edgeql
+    .. code-block:: edgeql-repl
 
-        SELECT count({2, 3, 5});
-        # returns 3
+        db> SELECT count({2, 3, 5});
+        {3}
 
-        SELECT count(User);
-        # returns the number of User objects in the DB
+        db> SELECT count(User);  # number of User objects in db
+        {4}
 
 .. eql:function:: std::sum(SET OF anyreal) -> anyreal
 
@@ -42,13 +42,13 @@ Aggregate Functions
     can be cast into it, such as :eql:type:`float64` or
     :eql:type:`int64`.
 
-    .. code-block:: edgeql
+    .. code-block:: edgeql-repl
 
-        SELECT sum({2, 3, 5});
-        # returns 10
+        db> SELECT sum({2, 3, 5});
+        {10}
 
-        SELECT sum({0.2, 0.3, 0.5});
-        # returns 1.0
+        db> SELECT sum({0.2, 0.3, 0.5});
+        {1.0}
 
 Here's a list of aggregate functions covered in other sections:
 

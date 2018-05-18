@@ -26,10 +26,10 @@ Polymorphic
     number of bytes in :eql:type:`bytes`, or the number of elements in
     an :eql:type:`array`.
 
-    .. code-block:: edgeql
+    .. code-block:: edgeql-repl
 
-        SELECT len('foo');
-        # returns 3
+        db> SELECT len('foo');
+        {3}
 
-        SELECT len([2, 5, 7]);
-        # also returns 3
+        db> SELECT len([2, 5, 7]);
+        {3}

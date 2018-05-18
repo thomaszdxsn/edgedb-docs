@@ -22,9 +22,10 @@ and a turnstile (``:=``).
 
 For example, the following computes the length of a string ``'foo'``:
 
-.. code-block:: edgeql
+.. code-block:: edgeql-repl
 
-    SELECT len('foo');
+    db> SELECT len('foo');
+    {3}
 
 Many built-in and user-defined functions operate on elements,
 so they are element-wise operations. This implies that if any of the
