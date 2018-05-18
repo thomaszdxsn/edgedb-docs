@@ -57,7 +57,7 @@ EdgeDB supports the following comparison operators:
 
     .. code-block:: edgeql-repl
 
-        db> SELECT <int64>{} ?= {};  # the type of the empty set requires disambiguation here
+        db> SELECT <int64>{} ?= {};
         {True}
 
 
