@@ -38,13 +38,8 @@ Everything is a Set
 
 Every value in EdgeQL is viewed as a set of elements.  A set may be empty
 (*empty set*), contain a single element (a *singleton*), or contain multiple
-elements.
-
-.. note::
-    :class: aside
-
-    Strictly speaking, EdgeQL sets are *multisets*, as they do not require
-    the elements to be unique.
+elements.  Strictly speaking, EdgeQL sets are *multisets*, as they do not
+require the elements to be unique.
 
 A set cannot contain elements of different base types.  Mixing objects and
 primitive types, as well as primitive types with different base type, is
@@ -52,7 +47,6 @@ not allowed.
 
 In SQL databases ``NULL`` is a special *value* denoting an absence of data.
 EdgeDB works with *sets*, so an absence of data is just an empty set.
-See :ref:`ref_eql_emptyset` on how empty sets are handled.
 
 
 .. _ref_eql_fundamentals_references:
@@ -65,7 +59,7 @@ that represents a set of values.  It can be the name of an object type, the
 name of a view, or an *expression alias* defined in a statement.
 
 For example a reference to the ``User`` object type in the following
-query will result in a set of all ``User`` objects:
+query will resolve to a set of all ``User`` objects:
 
 .. code-block:: edgeql
 
@@ -83,35 +77,13 @@ A set reference can be an expression alias:
 See :ref:`with block <ref_eql_with>` for more information on expression
 aliases.
 
-A *path expression* (or simply a *path*) is a special kind of set reference.
-It represents a set of values that are reachable when traversing a given
-sequence of links or properties from some source set.
-
-For example, the following will result in a set of all names of ``Users`` who
-are friends with some other user:
-
-.. code-block:: edgeql
-
-    SELECT User.friends.name;
-
-When two or more paths in an expression share a common prefix
-(i.e. start the same), then their longest common path prefix is treated
-as an equivalent set reference
-
-.. code-block:: edgeql
-
-    SELECT (User.friends.first_name, User.friends.last_name);
-
-The canonical form of the above query is:
-
-.. code-block:: edgeql
-
-    WITH UserFriends := User.friends
-    SELECT (UserFriends.first_name, UserFriends.last_name);
-
-
+A *path expression* (or simply a *path*) is an expression followed by a
+sequence of dot-separated link or property traversal specifications.  It
+represents a set of values reachable from the source set.
 See :ref:`ref_eql_expr_paths` for more information on path syntax and
 behavior.
+
+A *simple path* is a path which begins with a set reference.
 
 
 .. _ref_eql_fundamentals_aggregates:
@@ -119,7 +91,7 @@ behavior.
 Aggregates
 ==========
 
-A function parameter or an operand of an operator can be declared as
+A function parameter or an operand of an operator can be declared as an
 *aggregate parameter*.  An aggregate parameter means that the function or
 operator are called *once* on an entire set passed as a corresponding
 argument, rather than being called sequentially on each element of an
@@ -129,10 +101,27 @@ called an *aggregate*.  Non-aggregate functions and operators are
 
 For example, basic arithmetic :ref:`operators <ref_eql_funcop_math>`
 are regular operators, while the :eql:func:`sum` function and the
-:eql:op:`IN` operator are aggregates.
+:eql:op:`DISTINCT` operator are aggregates.
 
-An aggregate parameter is normally specified using the ``SET OF`` modifier
-in the function declaration.  See :eql:stmt:`CREATE FUNCTION` for details.
+An aggregate parameter is specified using the ``SET OF`` modifier
+in the function or operator declaration.  See :eql:stmt:`CREATE FUNCTION`
+for details.
+
+
+.. _ref_eql_fundamentals_optional:
+
+OPTIONAL
+========
+
+Normally, if a non-aggregate argument of a function or an operator is empty,
+then the function will not be called and the result will be empty.
+
+A function parameter or an operand of an operator can be declared as
+``OPTIONAL``, in which case the function is called normally when the
+corresponding argument is empty.
+
+A notable example of a function that gets called on empty input
+is the :eql:op:`coalescing <COALESCE>` operator.
 
 
 .. _ref_eql_fundamentals_queries:
@@ -141,11 +130,9 @@ Queries
 =======
 
 EdgeQL is a functional language in the sense that every expression is
-a composition of one or more queries.  A *query* is an expression that
-produces a set of values and is evaluated according to the algorithm below.
-A nested query is called a *subquery*.
+a composition of one or more queries.
 
-Subqueries can be *explicit*, such as a :eql:stmt:`SELECT` statement,
+Queries can be *explicit*, such as a :eql:stmt:`SELECT` statement,
 or *implicit*, as dictated by the semantics of a function, operator or
 a statement clause.
 
@@ -157,66 +144,64 @@ An implicit ``SELECT`` subquery is assumed in the following situations:
 - the right side of turnstile (``:=``) in expression aliases and
   :ref:`shape element declarations <ref_eql_expr_shapes>`;
 
-- the majority of statement clauses;
+- the majority of statement clauses.
 
-- any set returning function or operator (e.g. a :ref:`set constructor
-  <ref_eql_expr_index_set_ctor>`).
+A nested query is called a *subquery*.  Here, the phrase
+"*apearing directly in the query*" means
+"appearing directly in the query rather than in the subqueries".
 
 .. _ref_eql_fundamentals_eval_algo:
 
 A query is evaluated recursively using the following procedure:
 
-1. Replace all common path prefixes in a query and all its subqueries
-   with equivalent set references.
+1. Make a list of :term:`simple paths <simple path>` appearing directly the
+   query.  For every path in the list, find all paths which begin with the
+   same set reference and treat their longest common prefix as an equivalent
+   set reference.
 
-2. Make a cartesian product of all unique set references appearing
-   directly in the query (not in the subqueries). The result of the
-   product is a set of *input tuples*. If there are no set references
-   appearing directly in the main query, take the input set to contain
-   a single empty tuple. See :ref:`ref_eql_emptyset` on what happens
-   when the product is empty.
+   Example:
 
-3. Iterate over the input tuple set, and on every iteration:
+   .. code-block:: edgeql
 
-   - replace set references in the query and all its subqueries
-     with the corresponding value from the input tuple;
+      SELECT (
+        User.friends.firstname,
+        User.friends.lastname,
+        Issue.priority.name,
+        Issue.number,
+        Status.name
+      );
 
-   - compute the values of all subqueries and function calls, and treat
-     the results as set references;
+   In the above query, the longest common prefixes are: ``User.friends``,
+   ``Issue``, and ``Status.name``.
 
-   - make another cartesian product from the input tuple and the
-     sets produced by subqueries and functions, excluding the sets
-     used as aggregate arguments;
+2. Make a *query input list* of all unique set references which appear
+   directly in the query (including the common path prefixes identified above).
+   The set references in this list are called *input set references*,
+   and the sets they represent are called *input sets*.
 
-   - for every element of the nested cartesian product, compute
-     the value of the query and store the result.
+3. For every empty input set, check if it appears
+   exclusively as part of an :ref:`ref_eql_fundamentals_optional` argument,
+   and if so, exclude it from the query input list.
 
-4. Append the results of all iterations to obtain the final result set.
+4. Create a set of *input tuples* as a cartesian product of the input sets.
+   If the query input list is empty, the input tuple set would contain
+   a single empty input tuple.
 
+5. Iterate over the set of input tuples, and on every iteration:
 
-.. _ref_eql_emptyset:
+   - in the query and its subqueries, replace each input set reference with the
+     corresponding value from the input tuple or an empty set if the value
+     is missing;
 
-Empty Set Handling
-==================
+   - evaluate the query expression in the order of precedence using
+     the following rules:
 
-In the :ref:`evaluation algorithm <ref_eql_fundamentals_eval_algo>` above,
-the second step is making a cartesian product of element-wise inputs.
-Consequently, if any argument is an *empty set* the product will also be an
-empty set.  In this situation there are two possible scenarios:
+     * subqueries are evaluated recursively from step 1;
 
-1. If *none* of the functions in the query have arguments declared as
-   ``OPTIONAL``, the result is an empty set.  This is the most common case.
+     * a function or an operator is evaluated in a loop over a cartesian
+       product of its non-aggregate arguments
+       (empty ``OPTIONAL`` arguments are excluded from the product);
+       aggregate arguments are passed as a whole set;
+       the results of the invocations are collected to form a single set.
 
-2. If *any* of the functions in the query have arguments declared as
-   ``OPTIONAL``, these functions are called as usual, with arguments
-   passed as empty sets.
-
-For example, the following query returns an empty set:
-
-.. code-block:: edgeql-repl
-
-    db> SELECT {2} * {};
-    {}
-
-A notable example of a function that *does* get called on empty input
-is the :eql:op:`coalescing <COALESCE>` operator.
+6. Collect the results of all iterations to obtain the final result set.

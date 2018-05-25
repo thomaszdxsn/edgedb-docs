@@ -6,9 +6,9 @@
 Paths
 =====
 
-A *path expression* (or simply a *path*) is a special kind of set reference.
-It represents a set of values that are reachable when traversing a given
-sequence of links or properties from some source set.
+A *path expression* (or simply a *path*) represents a set of values that are
+reachable when traversing a given sequence of links or properties from some
+source set.
 
 The result of a path expression is:
 
@@ -16,7 +16,7 @@ a) if a path *does not* end with a property reference, then it represents a
    unique set of objects reachable from the set at the root of the path;
 
 b) if a path *does* end with a property reference, then it represents a
-   concatenation of property values for every element in the unique set of
+   list of property values for every element in the unique set of
    objects reachable from the set at the root of the path.
 
 The syntactic form of a path is:
