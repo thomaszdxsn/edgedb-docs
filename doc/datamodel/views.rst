@@ -39,4 +39,4 @@ Parameters
 DDL
 ===
 
-Indexes can also be defined using the :eql:stmt:`CREATE VIEW` EdgeQL command.
+Views can also be defined using the :eql:stmt:`CREATE VIEW` EdgeQL command.
